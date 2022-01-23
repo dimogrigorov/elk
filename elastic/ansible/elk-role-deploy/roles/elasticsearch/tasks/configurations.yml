@@ -1,0 +1,58 @@
+---
+  # Applies all local configurations to remote host
+  - name: Applying Elasticsearch configuration
+    copy:
+      src: elastic.config.yml
+      dest: /etc/elasticsearch/elasticsearch.yml
+      owner: root
+      group: elasticsearch
+      mode: 0660
+  - name: Applying JVM configuration for Elasticsearch
+    copy:
+      src: jvm.options
+      dest: /etc/elasticsearch/jvm.options
+      owner: root
+      group: elasticsearch
+      mode: 0660
+  - name: Applying Role mapping configuration for Elasticsearch
+    copy:
+      src: role_mapping.yml
+      dest: /etc/elasticsearch/role_mapping.yml
+      owner: root
+      group: elasticsearch
+      mode: 0660
+  - name: Applying Roles configuration for Elasticsearch
+    copy:
+      src: roles.yml
+      dest: /etc/elasticsearch/roles.yml
+      owner: root
+      group: elasticsearch
+      mode: 0660
+  - name: Applying Users configuration for Elasticsearch
+    copy:
+      src: users
+      dest: /etc/elasticsearch/users
+      owner: root
+      group: elasticsearch
+      mode: 0660
+  - name: Applying User roles configuration for Elasticsearch
+    copy:
+      src: users_roles
+      dest: /etc/elasticsearch/users_roles
+      owner: root
+      group: elasticsearch
+      mode: 0660
+  - name: Increasing memory map areas for Elasticsearch
+    copy:
+      src: elasticsearch.conf
+      dest: /usr/lib/sysctl.d/elasticsearch.conf
+      owner: root
+      group: root
+      mode: 0644
+  - name: Applying system configuration for Elasticsearch
+    copy:
+      src: elasticsearch
+      dest: /etc/sysconfig/elasticsearch
+      owner: root
+      group: elasticsearch
+      mode: 0660

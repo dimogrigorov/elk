@@ -1,0 +1,32 @@
+---
+  - name: Modifying Logstash service NICE level
+    lineinfile:
+      path: /etc/systemd/system/logstash.service
+      regexp: '^Nice='
+      line: 'Nice=0'
+  - name: Reloading system service configuration
+    command: systemctl daemon-reload
+  - name: Applying configuration for Logstash
+    copy:
+      src: logstash.config.yml
+      dest: /etc/logstash/logstash.yml
+  - name: Applying pipeline configuration for Logstash
+    copy:
+      src: pipelines.config.yml
+      dest: /etc/logstash/pipelines.yml
+  - name: Applying JVM configuration for Logstash
+    copy:
+      src: jvm.options
+      dest: /etc/logstash/jvm.options
+      owner: root
+      group: root
+      mode: 0644
+  - name: Applying startup configuration for Logstash
+    copy:
+      src: startup.options
+      dest: /etc/logstash/startup.options
+  - name: Setting directory permission
+    file:
+      path: /var/lib/logstash/queue
+      mode: 0666
+      state: directory

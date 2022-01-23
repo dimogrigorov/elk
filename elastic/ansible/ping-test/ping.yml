@@ -1,0 +1,14 @@
+-
+  name: Ping Playbook
+  hosts: all
+  # Requirement for hanrdening provided by ITS
+  # -k to ask for SSH access ()
+  # -K to ask for becoming sudo
+  remote_user: '{{ user }}'
+  become: true
+  become_method: sudo
+  become_user: root
+  gather_facts: no
+  tasks:
+    - name: Pinging hosts
+      ping:

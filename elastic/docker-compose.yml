@@ -1,0 +1,351 @@
+version: '2.2'
+
+services:
+  # Elasticsearch endpoint which is exposed outside Elastic network
+  elastic0:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.2
+    container_name: elastic0
+    restart: always
+    environment:
+      - "TZ=Europe/Sofia"
+      - node.attr.storage=no
+      - cluster.name=intest
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms31g -Xmx31g"
+      - "JAVA_OPTS=-Xms31g -Xmx31g"
+      - action.destructive_requires_name=false
+      - node.name=elastic0
+      - node.master=false
+      - node.data=false
+      - node.ingest=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /root/data/es0:/usr/share/elasticsearch/data
+      - /root/common-elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /root/elastic/conf/jvm/es-jvm.options:/usr/share/elasticsearch/config/jvm.options
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      esnet:
+        ipv4_address: 172.30.0.12
+
+  elastic1:
+    depends_on:
+     - elastic0
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.2
+    container_name: elastic1
+    restart: always
+    environment:
+      - "TZ=Europe/Sofia"
+      - node.attr.storage=hot
+      - cluster.name=intest
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms31g -Xmx31g"
+      - "JAVA_OPTS=-Xms31g -Xmx31g"
+      - action.destructive_requires_name:false
+      - discovery.zen.ping.unicast.hosts=elastic0
+      - node.name=elastic1
+      - node.master=true
+      - node.data=false
+      - node.ingest=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /root/data/es1:/usr/share/elasticsearch/data
+      - /root/common-elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /root/elastic/conf/jvm/es-jvm.options:/usr/share/elasticsearch/config/jvm.options
+    networks:
+      esnet:
+        ipv4_address: 172.30.0.13
+
+  elastic3:
+    depends_on:
+     - elastic1
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.2
+    container_name: elastic3
+    restart: always
+    environment:
+      - "TZ=Europe/Sofia"
+      - node.attr.storage=hot
+      - cluster.name=intest
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms31g -Xmx31g"
+      - "JAVA_OPTS=-Xms31g -Xmx31g"
+      - action.destructive_requires_name:false
+      - discovery.zen.ping.unicast.hosts=elastic0
+      - node.name=elastic3
+      - node.master=true
+      - node.data=true
+      - node.ingest=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /root/data/es3:/usr/share/elasticsearch/data
+      - /root/common-elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /root/elastic/conf/jvm/es-jvm.options:/usr/share/elasticsearch/config/jvm.options
+    networks:
+      esnet:
+        ipv4_address: 172.30.0.31
+
+  cadvisor:
+    depends_on:
+     - kibana
+    image: google/cadvisor:latest
+    container_name: cadvisor
+    restart: always
+    ports:
+     - 8080:8080
+    volumes:
+     - /var/lib/docker/:/var/lib/docker:ro
+     - /:/rootfs:ro
+     - /var/run:/var/run:rw
+     - /sys:/sys:ro
+     - /dev/disk/:/dev/disk:ro
+    networks:
+     esnet:
+       ipv4_address: 172.30.0.18
+
+  # Single Redis instance which is responsible to provide Pub/Sub
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+     - 6379:6379
+    networks:
+     esnet:
+       ipv4_address: 172.30.0.19
+
+  # Logstash, responsible for cytric logs from bush57, bush7, bali
+  # This instance collects logs from:
+  #  - cytric0 @ bush57 ()
+  #  - cytric1 @ bush57 (Star)
+  #  - cytric2 @ bush57 (Delhi)
+  #  - cytric3 @ bush57 (Bangkok)
+  #  - cytric0 @ bush7 (Bush)
+  #  - cytric1 @ bush7 (Bush1)
+  #  - cytric @ bali
+  #  - cutroc @ jakarta
+  #  - cytric @ jakartapatch
+  #  - cytric @ jakartagt
+  #  - cytric @ montblanc
+  logstash0:
+    image: docker.elastic.co/logstash/logstash:6.8.2
+    container_name: logstash0
+    restart: always
+    environment:
+     - "TZ=Europe/Sofia"
+     - node.name=logstash0
+     - pipeline.workers=8
+     - pipeline.batch.size=1000
+     - pipeline.batch.delay=5
+     - pipeline.unsafe_shutdown=true
+     - http.port=9601
+     - "PATH_CONFIG=/opt/*.conf"
+     - log.level=error
+     - XPACK_MONITORING_ENABLED=false
+     - "ELASTICSEARCH_URL=http://elastic0:9200"
+    volumes:
+     - /root/conf/ls0/cytric.conf:/opt/cytric.conf:rw
+     - /root/templates/cyt.json:/usr/share/logstash/templates/cyt.json:rw
+     - /mnt/bush57/cytric1/cytricv7.log:/mnt/bush57/cytric1/cytricv7.log:ro
+     - /mnt/bush57/cytric2/cytricv7.log:/mnt/bush57/cytric2/cytricv7.log:ro
+     - /mnt/bush57/cytric3/cytricv7.log:/mnt/bush57/cytric3/cytricv7.log:ro
+     - /mnt/bush/cytric0/cytric.log:/mnt/bush/cytric0/cytric.log:ro
+     - /mnt/bush/cytric1/cytric.log:/mnt/bush/cytric1/cytric.log:ro
+     - /mnt/cytric/jakarta/jakarta.log:/mnt/cytric/jakarta/jakarta.log:ro
+     - /mnt/cytric/search/search_jakarta.log:/mnt/cytric/search/search_jakarta.log:ro
+     - /mnt/cytric/jakartapatch/jakartapatch_console.log:/mnt/cytric/jakartapatch/jakartapatch_console.log:ro
+     - /mnt/cytric/searchpatch/search_console_jakartapatch.log:/mnt/cytric/searchpatch/search_console_jakartapatch.log:ro
+     - /mnt/cytric/jakartagt/jakartagt.log:/mnt/cytric/jakartagt/jakartagt.log:ro
+     - /mnt/cytric/montblanc/montblanc_console.log:/mnt/cytric/montblanc/montblanc_console.log:ro
+     - /mnt/bali/search/search_bali.log:/mnt/bali/search/search_bali.log:ro
+     - /mnt/bali/cytric/bali_console.log:/mnt/bali/cytric/bali_console.log:ro
+     - /root/elastic/conf/jvm/ls-jvm.options:/usr/share/logstash/config/jvm.options
+    networks:
+     esnet:
+       ipv4_address: 172.30.0.20
+
+  # Logstash, responsible for vegas logs related to QA test servers
+  # This includes:
+  #  - appCloud
+  #  - vegas Jakarta
+  #  - vegas Jakarta Patch
+  #  - IU Jakarta
+  #  - IU Jakarta Patch
+  #  - Reporting Jakarta
+  #  - Reporting Jakarta Patch
+  logstash1:
+    image: docker.elastic.co/logstash/logstash:6.8.2
+    container_name: logstash1
+    restart: always
+    environment:
+     - "TZ=Europe/Sofia"
+     - node.name=logstash1
+     - pipeline.workers=8
+     - pipeline.batch.size=1000
+     - pipeline.batch.delay=5
+     - pipeline.unsafe_shutdown=true
+     - http.port=9602
+     - "PATH_CONFIG=/opt/*.conf"
+     - log.level=error
+     - XPACK_MONITORING_ENABLED=false
+    volumes:
+     - /root/conf/ls1/vegas.conf:/opt/vegas.conf:rw
+     - /root/templates/veg.json:/usr/share/logstash/templates/veg.json:rw
+     - /mnt/vegas/cloud/CloudServer.log:/mnt/vegas/cloud/CloudServer.log:ro
+     - /mnt/vegas/vegastest/AdminServer.log:/mnt/vegas/vegastest/AdminServer.log:ro
+     - /mnt/vegas/iu_vegastest/Iu-Vegastest.log:/mnt/vegas/iu_vegastest/Iu-Vegastest.log:ro
+     - /mnt/vegas/reporting_vegastest/ReportingServer.log:/mnt/vegas/reporting_vegastest/ReportingServer.log:ro
+     - /mnt/vegas/vegaspatch/VegasPatch.log:/mnt/vegas/vegaspatch/VegasPatch.log:ro
+     - /mnt/vegas/iu_vegaspatch/Iu-Vegaspatch.log:/mnt/vegas/iu_vegaspatch/Iu-Vegaspatch.log:ro
+     - /mnt/vegas/reporting_vegaspatch/ReportingPatch.log:/mnt/vegas/reporting_vegaspatch/ReportingPatch.log:ro
+     - /mnt/vegasbali/vegas/vegasServer.log:/mnt/vegasbali/vegas/vegasServer.log:ro
+     - /mnt/vegasbali/iu_vegas/iu_vegas.log:/mnt/vegasbali/iu_vegas/iu_vegas.log:ro
+     - /mnt/vegasbali/reporting_vegas/reportingServer.log:/mnt/vegasbali/reporting_vegas/reportingServer.log:ro
+     - /mnt/vbush0/bush0/ReportingBush0.log:/mnt/vbush0/bush0/ReportingBush0.log:ro
+     - /mnt/vbush0/bush0/CloudBush0.log:/mnt/vbush0/bush0/CloudBush0.log:ro
+     - /mnt/vbush0/bush0/IuBush0.log:/mnt/vbush0/bush0/IuBush0.log:ro
+     - /mnt/vbush0/bush0/VegasBush0.log:/mnt/vbush0/bush0/VegasBush0.log:ro
+     - /mnt/vbush1/bush1/CloudBush1.log:/mnt/vbush1/bush1/CloudBush1.log:ro
+     - /mnt/vbush1/bush1/IuBush1.log:/mnt/vbush1/bush1/IuBush1.log:ro
+     - /mnt/vbush1/bush1/ReportingBush1.log:/mnt/vbush1/bush1/ReportingBush1.log:ro
+     - /mnt/vbush1/bush1/VegasBush1.log:/mnt/vbush1/bush1/VegasBush1.log:ro
+     - /mnt/vdelhinext/delhi/ReportingDelhi.log:/mnt/vdelhinext/delhi/ReportingDelhi.log:ro
+     - /mnt/vdelhinext/delhi/VegasDelhi.log:/mnt/vdelhinext/delhi/VegasDelhi.log:ro
+     - /mnt/vdelhiprev/delhi/ReportingDelhi.log:/mnt/vdelhiprev/delhi/ReportingDelhi.log:ro
+     - /mnt/vdelhiprev/delhi/VegasDelhi.log:/mnt/vdelhiprev/delhi/VegasDelhi.log:ro
+     - /mnt/vdelhi/delhi/CloudDelhi.log:/mnt/vdelhi/delhi/CloudDelhi.log:ro
+     - /mnt/vdelhi/delhi/IuDelhi.log:/mnt/vdelhi/delhi/IuDelhi.log:ro
+     - /mnt/vdelhi/delhi/ReportingDelhi.log:/mnt/vdelhi/delhi/ReportingDelhi.log:ro
+     - /mnt/vdelhi/delhi/VegasDelhi.log:/mnt/vdelhi/delhi/VegasDelhi.log:ro
+     - /mnt/bangkok/bangkok/CloudBangkok.log:/mnt/bangkok/bangkok/CloudBangkok.log:ro
+     - /mnt/bangkok/bangkok/IuBangkok1.log:/mnt/bangkok/bangkok/IuBangkok1.log:ro
+     - /mnt/bangkok/bangkok/IuBangkok.log:/mnt/bangkok/bangkok/IuBangkok.log:ro
+     - /mnt/bangkok/bangkok/ReportingBangkok.log:/mnt/bangkok/bangkok/ReportingBangkok.log:ro
+     - /mnt/bangkok/bangkok/VegasBangkok.log:/mnt/bangkok/bangkok/VegasBangkok.log:ro
+     - /mnt/expensegt/expensegt/VegasCI.log:/mnt/expensegt/expensegt/VegasCI.log:ro
+     - /mnt/expensegt/expensegt/VegasDemo.log:/mnt/expensegt/expensegt/VegasDemo.log:ro
+     - /mnt/expensegt/expensegt/VegasQA1.log:/mnt/expensegt/expensegt/VegasQA1.log:ro
+     - /mnt/expensegt/expensegt/VegasQA2.log:/mnt/expensegt/expensegt/VegasQA2.log:ro
+     - /mnt/expensegt/expensegt/VegasQA3.log:/mnt/expensegt/expensegt/VegasQA3.log:ro
+     - /root/elastic/conf/jvm/ls-jvm.options:/usr/share/logstash/config/jvm.options
+    networks:
+     esnet:
+       ipv4_address: 172.30.0.22
+
+  # Logstash, responsible for CIB logs which are mounted to this server
+  logstash3:
+    image: docker.elastic.co/logstash/logstash:6.8.2
+    container_name: logstash3
+    restart: always
+    environment:
+     - "TZ=Europe/Sofia"
+     - node.name=logstash3
+     - pipeline.workers=4
+     - pipeline.batch.size=100
+     - pipeline.batch.delay=5
+     - pipeline.unsafe_shutdown=false
+     - http.port=9603
+     - log.level=error
+     - "PATH_CONFIG=/opt/*.conf"
+     - UID=500
+     - XPACK_MONITORING_ENABLED=false
+    volumes:
+     - /sys:/sys:ro
+     - /root/conf/ls3/cib.conf:/opt/cib.conf:rw
+     - /root/templates/cib.json:/usr/share/logstash/templates/cib.json:rw
+     - /mnt/cib/cibsource_cibtest/CibsourceCibtest.log:/mnt/cib/cibsource_cibtest/CibsourceCibtest.log:ro
+     - /mnt/cib/cibtest/cib.log:/mnt/cib/cibtest/cib.log:ro
+     - /mnt/cib/cibsource_cibtest/cibSourceTest.log:/mnt/cib/cibsource_cibtest/cibSourceTest.log:ro
+     - /mnt/cib/cibtest/cibWorkbenchTest.log:/mnt/cib/cibtest/cibWorkbenchTest.log:ro
+     - /root/elastic/conf/jvm/ls-jvm.options:/usr/share/logstash/config/jvm.options
+    networks:
+     esnet:
+       ipv4_address: 172.30.0.23
+
+  # Logstash, responsible for vegas BI/TI data
+  logstash4:
+    depends_on:
+     - redis
+    image: docker.elastic.co/logstash/logstash:6.8.2
+    container_name: logstash4
+    restart: always
+    environment:
+     - "TZ=Europe/Sofia"
+     - node.name=logstash4
+     - pipeline.workers=2
+     - pipeline.batch.size=10
+     - pipeline.batch.delay=5
+     - pipeline.unsafe_shutdown=false
+     - http.port=9606
+     - "PATH_CONFIG=/opt/*.conf"
+     - log.level=error
+     - XPACK_MONITORING_ENABLED=false
+    volumes:
+     - /root/conf/ls4/vegasbi.conf:/opt/vegasbi.conf:rw
+     - /root/elastic/conf/jvm/ls-jvm.options:/usr/share/logstash/config/jvm.options
+    networks:
+     esnet:
+       ipv4_address: 172.30.0.28
+
+  # This Logstash instance is responsible for processing logs from Filebeat which is deployed at chpd.home.ifao.net
+  # which is cHPD test environment
+  logstash5:
+    image: docker.elastic.co/logstash/logstash:6.8.2
+    container_name: logstash5
+    restart: always
+    environment:
+     - "TZ=Europe/Sofia"
+     - node.name=logstash5
+     - pipeline.workers=2
+     - pipeline.batch.size=10
+     - pipeline.batch.delay=1
+     - pipeline.unsafe_shutdown=true
+     - log.level=trace
+     - http.port=9609
+     - "PATH_CONFIG=/opt/*.conf"
+     - XPACK_MONITORING_ENABLED=false
+    volumes:
+     - /root/conf/ls5/chpd.conf:/opt/chpd.conf:rw
+     - /root/elastic/conf/jvm/ls-jvm.options:/usr/share/logstash/config/jvm.options
+    ports:
+     - 5001:5466
+    networks:
+      esnet:
+        ipv4_address: 172.30.0.32
+
+  # Kibana instance
+  kibana:
+    depends_on:
+     - elastic0
+    image: docker.elastic.co/kibana/kibana:6.8.2
+    container_name: kibana
+    restart: always
+    environment:
+      - "ELASTICSEARCH_URL=http://elastic0:9200"
+      - "ELASTICSEARCH_REQUESTTIMEOUT=120000"
+      - "ELASTICSEARCH_SHARDTIMEOUT=120000"
+    ports:
+      - 5601:5601
+    networks:
+      esnet:
+        ipv4_address: 172.30.0.25
+
+networks:
+  esnet:
+    name: esnet
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+          gateway: 172.30.0.1
+

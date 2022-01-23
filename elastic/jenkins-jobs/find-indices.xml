@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <displayName>Move indices to cold storage</displayName>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>1</daysToKeep>
+        <numToKeep>1</numToKeep>
+        <artifactDaysToKeep>1</artifactDaysToKeep>
+        <artifactNumToKeep>1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>startWith</name>
+          <description>Indices start with?</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>cyt</string>
+              <string>veg</string>
+              <string>cib</string>
+              <string>arctic</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command># Get indices from Elastic Stack
+curl -XGET &quot;http://elastic:9200/_cat/indices?h=index&amp;index=${startWith}*&quot; &gt; indices
+
+
+# Find out current date
+CURRENT_DATE=`date +%F`
+
+# Prepare file which should be executed
+echo &apos;#!/bin/sh&apos; &gt; cleanup
+printf &quot;sed -i &apos;s/^.*\.$CURRENT_DATE$//g&apos; indices&quot; &gt;&gt; cleanup
+chmod +x cleanup
+./cleanup
+
+# Output indices which are for re-allocation
+echo &quot;&quot;
+echo &quot;====================&quot;
+cat ${WORKSPACE}/indices | sort -r
+echo &quot;====================&quot;
+
+indices=`cat ${WORKSPACE}/indices`
+to=&quot;elastic5&quot;
+
+# Relocate indices
+for index in $indices; do
+  curl -XPUT &quot;http://elastic:9200/${index}/_settings&quot; -H &apos;Content-Type: application/json&apos; -d&quot;
+  {
+    \&quot;index.routing.allocation.include._name\&quot; : \&quot;&quot;${to}\&quot;&quot;,
+    \&quot;index.routing.allocation.include._ip\&quot; : \&quot;172.19.0.17\&quot;,
+    \&quot;index.routing.allocation.exclude.storage\&quot;: \&quot;hot\&quot;,
+    \&quot;index.routing.allocation.include.storage\&quot;: \&quot;cold\&quot;
+  }&quot;
+done</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

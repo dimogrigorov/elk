@@ -1,0 +1,55 @@
+-
+  name: Filebeat Playbook
+  hosts: all
+  # Requirement for hanrdening provided by ITS
+  # -k to ask for SSH access ()
+  # -K to ask for becoming sudo
+  remote_user: '{{ user }}'
+  become: true
+  become_method: sudo
+  become_user: root
+  vars_files:
+    - vars.yml
+  vars:
+    elk:
+      - "filebeat-{{ filebeat_version }}"
+    required:
+      - bind-utils
+      - net-tools
+      - epel-repelase
+      - nload
+      - iftop
+    gpg:
+      - "{{ gpg_key }}"
+  tasks:
+    - name: Importing GPG key for Elastic.co
+      rpm_key:
+        key: '{{ item }}'
+        state: present
+      with_items: '{{ gpg }}'
+    - name: Deploying Elastic.co repository
+      yum_repository:
+        name: elastic
+        description: Elastic.co repository for 6.x packages
+        baseurl: https://artifacts.elastic.co/packages/6.x/yum
+        gpgcheck: yes
+        gpgkey: '{{ gpg_key }}'
+        enabled: yes
+        state: present
+    - name: Installing required packages
+      yum:
+        name: '{{ required }}'
+        state: present
+    - name: Installing Filebeat {{ filebeat_version }}
+      yum:
+        name: '{{ elk }}'
+        state: present
+        enablerepo: elastic
+        update_cache: yes
+    - name: Reloading system service configuration
+      command: systemctl daemon-reload
+    - name: Starting and enabling Filebeat service
+      service:
+        name: filebeat
+        state: restarted
+        enabled: yes

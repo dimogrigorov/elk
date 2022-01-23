@@ -1,0 +1,9 @@
+node.name: data
+cluster.name: swarmie
+action.destructive_requires_name: false
+discovery.zen.ping.unicast.hosts: master,coordinator
+node.master: false
+node.data: true
+node.ingest: true
+network.host: 0.0.0.0
+discovery.zen.minimum_master_nodes: 1

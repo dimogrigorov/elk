@@ -1,0 +1,7 @@
+---
+  # Enables Elasticsearch service and starts it
+  - name: Starting and enabling Elasticsearch service
+    service:
+      name: elasticsearch
+      state: started
+      enabled: yes

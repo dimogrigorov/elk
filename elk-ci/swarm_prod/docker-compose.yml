@@ -1,0 +1,49 @@
+services:
+  jenkins:
+    image: jenkins:devopslatest
+    volumes:
+      - jenkins:/var/jenkins_home
+    configs:
+      - source: log.properties
+        target: /var/jenkins_home/log.properties
+      - source: keystore.jks
+        target: /var/jenkins_home/cert/keystore.jks
+      - source: cacerts
+        target: /usr/local/openjdk-8/jre/lib/security/cacerts
+    networks:
+      - jenkinsnet
+    ports:
+      - 443:8443
+    environment:
+      - 'LDAP_SERVER=ldaps://ldapc.ldap.prod.ifao.net'
+      - 'LDAP_ROOTDN=DC=ldap,DC=prod,DC=ifao,DC=net'
+     # - 'LDAP_USER_SEARCH=(&(sAMAccountName={0})(objectCategory=Person)(|(memberOf=CN=i:FAO Jenkins TEST for arctic,CN=Users,DC=ldap,DC=prod,DC=ifao,DC=net)(memberOf=CN=i:FAO Jenkins TEST for arctic DevOps,CN=Users,DC=ldap,DC=prod,DC=ifao,DC=net)(memberOf=CN=i:FAO Jenkins TEST for arctic Externals,CN=Users,DC=ldap,DC=prod,DC=ifao,DC=net)))'
+      #- 'LDAP_GROUP_SEARCH_FILTER=(&(cn={0})(objectCategory=Group)(|(name=i:FAO Jenkins TEST for arctic)(name=i:FAO Jenkins TEST for arctic DevOps)(name=i:FAO Jenkins TEST for arctic Externals)))'
+      - 'LDAP_USER_SEARCH=(&(sAMAccountName={0}))'
+      - 'LDAP_GROUP_SEARCH_FILTER=(&(cn={0}))'
+      - 'LDAP_MANAGER_DN=CN=LDAP Query,CN=Users,DC=ldap,DC=prod,DC=ifao,DC=net'
+      - 'LDAP_MANAGER_PASSWORD=Umbrell4 Helicopter'
+      - 'LDAP_USER_SEARCH_BASE=CN=Users'
+      - 'LDAP_GROUP_SEARCH_BASE=CN=Users'
+      - LDAP_DISABLE_MAIL_ADDRESS_RESOLVER=false
+      - LDAP_INHIBIT_INFER_ROOTDN=false
+      - LDAP_GROUP_MEMBERSHIP_STRATEGY=FromUserRecordLDAPGroupMembershipStrategy
+      - 'JENKINS_OPTS=--httpPort=-1 --httpsPort=8443 --httpsKeyStore=/var/jenkins_home/cert/keystore.jks --httpsKeyStorePassword=123456'
+      - 'JAVA_OPTS=-Djava.util.logging.config.file=/var/jenkins_home/log.properties -Dappdynamics.force.default.ssl.certificate.validation=false'
+
+networks:
+  jenkinsnet:
+    driver: overlay
+    attachable: true
+
+volumes:
+  jenkins:
+
+configs:
+  keystore.jks:
+    file: /root/elastic/conf/jenkins/keystore.jks
+  log.properties:
+    file: /root/elastic/conf/jenkins/log.properties
+  cacerts:
+    file: /root/elastic/conf/jenkins/cacerts
+

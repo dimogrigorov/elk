@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <displayName>Move Elasticsearch Index to another node</displayName>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>index</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>from</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>to</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>true</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>curl -XPOST &quot;http://elastic:9200/_cluster/reroute&quot; -H &apos;Content-Type: application/json&apos; -d&quot;
+{
+  \&quot;commands\&quot;: [
+    {
+      \&quot;move\&quot;: {
+        \&quot;index\&quot;: \&quot;&quot;${index}&quot;\&quot;,
+        \&quot;shard\&quot;: 0,
+        \&quot;from_node\&quot;: \&quot;&quot;${from}&quot;\&quot;,
+        \&quot;to_node\&quot;: \&quot;&quot;${to}&quot;\&quot;
+      }
+    }
+  ]
+}&quot;
+
+# cib.94f172a53c85.2018-07-27
+
+
+# Lock shard to cold storage
+curl -XPUT &quot;http://elastic:9200/${index}/_settings&quot; -H &apos;Content-Type: application/json&apos; -d&apos;
+{
+  &quot;index.routing.allocation.include._ip&quot;: &quot;192.168.112.7&quot;
+}&apos;</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

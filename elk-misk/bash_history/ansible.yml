@@ -1,0 +1,19 @@
+---
+- hosts: all
+  remote_user: '{{ user }}'
+  become: true
+  become_method: sudo
+  become_user: root
+  tasks:
+    - name: "Creates required directory tree"
+      file:
+        path: /opt/bh
+        state: directory
+        owner: root
+        group: root
+        mode: 0777
+    - name: "Deploys global bashrc configuration"
+      copy: src={{ item.src }} dest={{ item.dest }} mode=0644 owner=root
+      with_items:
+        - { src: 'ps-twtty-7.sh', dest: '/etc/profile.d/ps.sh' }
+

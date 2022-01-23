@@ -1,0 +1,21 @@
+---
+# This playbook deploys the whole application stack in this site.
+
+- hosts: all
+  # Remote user to become once you are at remote host
+  # User is defined in inventory file
+  remote_user: '{{ user }}'
+  become: true
+  become_method: sudo
+  become_user: root
+  vars_files:
+    - vars.yml
+  vars:
+    required:
+      - bind-utils
+      - net-tools
+      - java-1.8.0-openjdk
+    gpg:
+      - "{{ gpg_key }}"
+  roles:
+    - logstash

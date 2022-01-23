@@ -1,0 +1,106 @@
+-
+  name: Elasticsearch Playbook
+  hosts: all
+  # Requirement for hanrdening provided by ITS
+  # -k to ask for SSH access ()
+  # -K to ask for becoming sudo
+  remote_user: '{{ user }}'
+  become: true
+  become_method: sudo
+  become_user: root
+  vars_files:
+    - vars.yml
+  vars:
+    elk:
+      - "elasticsearch-{{ elasticsearch_version }}"
+    required:
+      - bind-utils
+      - java-1.8.0-openjdk
+    gpg:
+      - "{{ gpg_key }}"
+  tasks:
+    - name: Importing GPG key for Elastic.co
+      rpm_key:
+        key: '{{ item }}'
+        state: present
+      with_items: '{{ gpg }}'
+    - name: Deploying Elastic.co repository
+      yum_repository:
+        name: elastic
+        description: Elastic.co repository for 6.x packages
+        baseurl: https://artifacts.elastic.co/packages/6.x/yum
+        gpgcheck: yes
+        gpgkey: '{{ gpg_key }}'
+        enabled: yes
+        state: present
+    - name: Installing required packages
+      yum:
+        name: '{{ required }}'
+        state: present
+    - name: Installing Elasticsearch {{ elasticsearch_version }}
+      yum:
+        name: '{{ elk }}'
+        state: present
+        enablerepo: elastic
+        update_cache: yes
+    - name: Applying Elasticsearch configuration
+      copy:
+        src: elastic.config.yml
+        dest: /etc/elasticsearch/elasticsearch.yml
+        owner: root
+        group: elasticsearch
+        mode: 0660
+    - name: Applying JVM configuration for Elasticsearch
+      copy:
+        src: jvm.options
+        dest: /etc/elasticsearch/jvm.options
+        owner: root
+        group: elasticsearch
+        mode: 0660
+    - name: Applying Role mapping configuration for Elasticsearch
+      copy:
+        src: role_mapping.yml
+        dest: /etc/elasticsearch/role_mapping.yml
+        owner: root
+        group: elasticsearch
+        mode: 0660
+    - name: Applying Roles configuration for Elasticsearch
+      copy:
+        src: roles.yml
+        dest: /etc/elasticsearch/roles.yml
+        owner: root
+        group: elasticsearch
+        mode: 0660
+    - name: Applying Users configuration for Elasticsearch
+      copy:
+        src: users
+        dest: /etc/elasticsearch/users
+        owner: root
+        group: elasticsearch
+        mode: 0660
+    - name: Applying User roles configuration for Elasticsearch
+      copy:
+        src: users_roles
+        dest: /etc/elasticsearch/users_roles
+        owner: root
+        group: elasticsearch
+        mode: 0660
+    - name: Increasing memory map areas for Elasticsearch
+      copy:
+        src: elasticsearch.conf
+        dest: /usr/lib/sysctl.d/elasticsearch.conf
+        owner: root
+        group: root
+        mode: 0644
+    - name: Applying system configuration for Elasticsearch
+      copy:
+        src: elasticsearch
+        dest: /etc/sysconfig/elasticsearch
+        owner: root
+        group: elasticsearch
+        mode: 0660
+    - name: Starting and enabling Elasticsearch service
+      service:
+        name: elasticsearch
+        state: restarted
+        enabled: yes

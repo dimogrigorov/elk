@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.5.1
+    deploy:
+      mode: 'global'
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
+    networks:
+      - kibana_stack
+    ports:
+      - "5604:5601"
+    configs:
+      - source: kibana
+        target: /usr/share/kibana/config/kibana.yml
+
+  visualizer:
+    image: dockersamples/visualizer
+    stop_grace_period: 1m30s
+    networks:
+      - kibana_stack
+    ports:
+      - "9080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  kibana_stack:
+
+configs:
+  kibana:
+    external: true

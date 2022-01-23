@@ -1,0 +1,25 @@
+node {
+
+  stage('Remove transient settings') {
+    sh """curl -XPUT "http://es.secure.ifao.net:9200/_cluster/settings" -H 'Content-Type: application/json' -d'
+{
+  "transient": {
+    "cluster" : {
+      "routing" : {
+        "allocation" : {
+          "node_concurrent_recoveries" : 20,
+          "node_initial_primaries_recoveries" : 20
+        }
+      }
+    },
+    "indices" : {
+      "recovery" : {
+        "max_bytes_per_sec" : "40gb"
+      }
+    }
+  }
+}'"""
+  }
+
+}
+

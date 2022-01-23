@@ -1,0 +1,81 @@
+-
+  name: Logstash Playbook
+  hosts: all
+  # Requirement for hanrdening provided by ITS
+  # -k to ask for SSH access ()
+  # -K to ask for becoming sudo
+  remote_user: '{{ user }}'
+  become: true
+  become_method: sudo
+  become_user: root
+  vars_files:
+    - vars.yml
+  vars:
+    elk:
+      - "logstash-{{ logstash_version }}"
+    required:
+      - bind-utils
+      - java-1.8.0-openjdk
+    gpg:
+      - "{{ gpg_key }}"
+  tasks:
+    - name: Importing GPG key for Elastic.co
+      rpm_key:
+        key: '{{ item }}'
+        state: present
+      with_items: '{{ gpg }}'
+    - name: Deploying Elastic.co repository
+      yum_repository:
+        name: elastic
+        description: Elastic.co repository for 6.x packages
+        baseurl: https://artifacts.elastic.co/packages/6.x/yum
+        gpgcheck: yes
+        gpgkey: '{{ gpg_key }}'
+        enabled: yes
+        state: present
+    - name: Installing required packages
+      yum:
+        name: '{{ required }}'
+        state: present
+    - name: Installing Logstash {{ logstash_version }}
+      yum:
+        name: '{{ elk }}'
+        state: present
+        enablerepo: elastic
+        update_cache: yes
+    - name: Modifying Logstash service NICE level
+      lineinfile:
+        path: /etc/systemd/system/logstash.service
+        regexp: '^Nice='
+        line: 'Nice=0'
+    - name: Reloading system service configuration
+      command: systemctl daemon-reload
+    - name: Applying configuration for Logstash
+      copy:
+        src: logstash.config.yml
+        dest: /etc/logstash/logstash.yml
+    - name: Applying pipeline configuration for Logstash
+      copy:
+        src: pipelines.config.yml
+        dest: /etc/logstash/pipelines.yml
+    - name: Applying JVM configuration for Logstash
+      copy:
+        src: jvm.options
+        dest: /etc/logstash/jvm.options
+        owner: root
+        group: root
+        mode: 0644
+    - name: Applying startup configuration for Logstash
+      copy:
+        src: startup.options
+        dest: /etc/logstash/startup.options
+    - name: Setting directory permission
+      file:
+        path: /var/lib/logstash/queue
+        mode: 0666
+        state: directory
+    - name: Starting and enabling Logstash service
+      service:
+        name: logstash
+        state: restarted
+        enabled: yes

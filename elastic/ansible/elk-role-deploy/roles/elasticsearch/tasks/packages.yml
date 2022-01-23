@@ -1,0 +1,8 @@
+---
+  # Installs Elasticsearch in specified version
+  - name: Installing Elasticsearch {{ elk_version }}
+    yum:
+      name: elasticsearch-{{ elk_version }}
+      state: present
+      enablerepo: elastic
+      update_cache: yes

@@ -1,0 +1,7 @@
+---
+  # Enables Kibana and starts it
+  - name: Starting and enabling Kibana service
+    service:
+      name: kibana
+      state: started
+      enabled: yes

@@ -1,0 +1,38 @@
+---
+  # Verify Ansible version
+  - name: Verifies Ansible version
+    assert:
+      that: "ansible_version.full is version_compare('2.7', '>=')"
+      msg: "Current version {{ ansible_version.full }} is not sufficient. Update to 2.7."
+
+  # Importing GPG key
+  - name: Importing GPG key for Elastic.co
+    rpm_key:
+      key: '{{ item }}'
+      state: present
+    with_items: '{{ gpg }}'
+
+  # Deploying repository from Elastic.co
+  - name: Deploying Elastic.co repository
+    yum_repository:
+      name: elastic
+      description: Elastic.co repository for 6.x packages
+      baseurl: https://artifacts.elastic.co/packages/6.x/yum
+      gpgcheck: yes
+      gpgkey: '{{ gpg_key }}'
+      enabled: yes
+      state: present
+
+  # Disables firewalld service
+  - name: Stops firewalld service
+    service:
+      name: firewalld
+      state: stopped
+      enabled: no
+
+  # Install required packages for Elasticsearch
+  # Note: OpenJDK is used instead of OracleJDK or something else
+  - name: Installing required packages
+    yum:
+      name: '{{ required }}'
+      state: present

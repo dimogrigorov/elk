@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <displayName>Remove replica shards</displayName>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>curl elastic:9200/_cat/indices?h=index &gt; indices
+indices=`cat ${WORKSPACE}/indices`
+
+for index in $indices; do
+	curl -XPUT &quot;http://elastic:9200/${index}/_settings&quot; -H &apos;Content-Type: application/json&apos; -d&quot;
+    {
+        \&quot;index\&quot; : {
+          \&quot;number_of_replicas\&quot; : &quot;0&quot;
+	}
+  }&quot;
+done</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

@@ -1,0 +1,15 @@
+---
+  - name: Downloads Elasticsearch image from Elastic Hub
+    command: "docker pull docker.elastic.co/elasticsearch/elasticsearch:{{ elk_version }}"
+  - name: Downloads Logstash image from Elastic Hub
+    command: "docker pull docker.elastic.co/logstash/logstash:{{ elk_version }}"
+  - name: Downloads Kibana image from Elastic Hub
+    command: "docker pull docker.elastic.co/kibana/kibana:{{ elk_version }}"
+  - name: Downloads cAdvisor
+    command: "docker pull google/cadvisor:{{ cadvisor_version }}"
+  - name: Downloads Redis
+    command: "docker pull redis:{{ redis_version }}"
+  - name: Downloads Portainer
+    command: "docker pull portainer/portainer:{{ portainer_version }}"
+  - name: Downloads latest Jenkins
+    command: "docker pull jenkins:{{ jenkins_version }}"

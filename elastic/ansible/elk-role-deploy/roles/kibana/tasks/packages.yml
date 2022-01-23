@@ -1,0 +1,7 @@
+---
+- name: Installing Kibana {{ elk_version }}
+  yum:
+    name: kibana-{{ elk_version }}
+    state: present
+    enablerepo: elastic
+    update_cache: yes

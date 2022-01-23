@@ -1,0 +1,147 @@
+---
+  - name: "Deploys Git certificate"
+    copy:
+      src: "{{ cert_name }}"
+      dest: "{{ cert_path }}/{{ cert_name }}"
+
+  - name: "Configures Git CA Path"
+    command: "git config --system http.sslCAPath {{ cert_path }}"
+
+  - name: "Configures Git CA Info"
+    command: "git config --system http.sslCAinfo {{ cert_path }}/{{ cert_name }}"
+
+    # These variables should be provided through CLI or CI tool
+    # This task should not be executed with credentials in plain text
+  - name: "Downloads Elastic repository from Bitbucket"
+    git:
+      repo: "https://{{ GIT_USER }}:{{ GIT_PASSWORD }}@{{ bitbucket_repo }}"
+      dest: "{{ clone_dest }}"
+      clone: yes
+      umask: "0022"
+      version: HEAD
+    ignore_errors: yes
+
+    # Following tasks should fail (or not complete fully),
+    # if Git repository is not cloned.
+    # However, they will not break Playbook
+
+    # Applies specific VIM configuration to entire system
+  - name: "Applying Vim configuration"
+    copy:
+      src: "{{ clone_dest }}/vimrc"
+      dest: /etc/vimrc
+      owner: root
+      group: root
+      mode: 0644
+      remote_src: yes
+    ignore_errors: yes
+
+    # Removes original .bashrc
+  - name: "Removes original .bashrc"
+    file:
+      state: absent
+      path: "~/.bashrc"
+    ignore_errors: yes
+
+    # Removes original .bash_profile
+  - name: "Removes original .bash_profile"
+    file:
+      state: absent
+      path: "~/.bash_profile"
+    ignore_errors: yes
+
+    # Removes original .tmux.conf
+  - name: "Removes original .tmux.conf"
+    file:
+      state: absent
+      path: "~/.tmux.conf"
+    ignore_errors: yes
+
+    # Creates symlink for .tmux.conf
+  - name: "Creates link for .tmux.conf"
+    file:
+      src: "{{ clone_dest }}/.tmux.conf"
+      dest: "~/.tmux.conf"
+      state: link
+    ignore_errors: yes
+
+    # Creates symlink for .bashrc
+  - name: "Creates link for .bashrc"
+    file:
+      src: "{{ clone_dest }}/.bashrc"
+      dest: "~/.bashrc"
+      state: link
+    ignore_errors: yes
+
+    # Creates symlink for .bash_profile
+  - name: "Creates link for .bash_profile"
+    file:
+      src: "{{ clone_dest }}/.bash_profile"
+      dest: "~/.bash_profile"
+      state: link
+    ignore_errors: yes
+
+    # Creates symlink to Docker Compose file
+  - name: "Creates link to Docker compose file"
+    file:
+      src: "{{ clone_dest }}/docker-compose.yml"
+      dest: "~/docker-compose.yml"
+      state: link
+      mode: 0644
+    ignore_errors: yes
+
+    # Creates symlink to all configuration files
+  - name: "Creates link to configuration files"
+    file:
+      src: "{{ clone_dest }}/conf/"
+      dest: "~/conf"
+      state: link
+    ignore_errors: yes
+
+    # Creates symlink to all templates files
+  - name: "Creates link to templates files"
+    file:
+      src: "{{ clone_dest }}/templates/"
+      dest: "~/templates"
+      state: link
+    ignore_errors: yes
+  
+    # Creates data directories
+  - name: Deploys script to create neccessary directories
+    copy:
+      src: directory-tree.sh
+      dest: "~/directory-tree.sh"
+      owner: root
+      group: root
+
+    # Executes in separate process directory-tree.sh on remote host
+  - name: Creates directory tree for Elastic Stack
+    command: "sh ~/directory-tree.sh"
+
+    # Removes directory-tree.sh file
+  - name: "Performs clean up and removes directory-tree.sh"
+    file:
+      state: absent
+      path: "~/directory-tree.sh"
+
+    # Increases max map count for this OS
+  - name: "Increases max map count"
+    lineinfile:
+      dest: /etc/sysctl.conf
+      line: "vm.max_map_count = 262144"
+      owner: root
+      group: root
+      state: present
+      insertafter: EOF
+      create: True
+  
+    # Allows OS to have overcommited memory
+  - name: "Allows overcommit memory"
+    lineinfile:
+      dest: /etc/sysctl.conf
+      line: "vm.overcommit_memory = 1"
+      owner: root
+      group: root
+      state: present
+      insertafter: EOF
+      create: True

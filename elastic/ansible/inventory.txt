@@ -1,0 +1,8 @@
+# Note, ansible_ssh_pass may not be used, if you generate fingerprints from control machine
+# This is more secure and the way how is supposed to be done in GNU/Linux environments
+
+#testvm-0 ansible_host=10.5.202.167 ansible_connection=ssh user=root
+#testvm-1 ansible_host=10.5.202.168 ansible_connection=ssh user=root
+elastic-1 ansible_host=10.69.176.223 ansible_connection=ssh user=root
+#localhost ansible_connection=local user=root
+#svelasfb01t ansible_host=svelasfb01t ansible_connection=ssh user=dimov

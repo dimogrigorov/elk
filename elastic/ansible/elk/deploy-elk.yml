@@ -1,0 +1,51 @@
+-
+  name: Deploy Elastic Stack on this host
+  hosts: all
+  # Requirement for hanrdening provided by ITS
+  # -k to ask for SSH access ()
+  # -K to ask for becoming sudo
+  remote_user: '{{ user }}'
+  become: true
+  become_method: sudo
+  become_user: root
+  vars:
+    elk:
+      - elasticsearch
+      - logstash
+      - kibana
+    gpg:
+      - https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  tasks:
+    - name: Importing GPG key for Elastic.co repository
+      rpm_key:
+        key: '{{ item }}'
+        state: present
+      with_items: '{{ gpg }}'
+    - name: Deploying Elastic.co repository
+      yum_repository:
+        name: elastic
+        description: Elastic.co repository for 6.x packages
+        baseurl: https://artifacts.elastic.co/packages/6.x/yum
+        gpgcheck: yes
+        gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+        enabled: yes
+        state: present
+    - name: Installing packages, required for Elastic Stack
+      yum:
+        name: '{{ item }}'
+        state: present
+      with_items:
+          - java-1.8.0-openjdk
+          - bind-utils
+    - name: Installing packages for Elastic Stack
+      yum:
+        name: '{{ elk }}'
+        state: present
+        enablerepo: elastic
+    - name: Starting and enabling Elstic Stack services
+      service:
+        name: '{{ item }}'
+        state: started
+        enabled: yes
+      with_items:
+         - '{{ elk }}'

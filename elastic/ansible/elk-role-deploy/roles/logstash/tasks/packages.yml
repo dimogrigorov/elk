@@ -1,0 +1,7 @@
+---
+  - name: Installing Logstash {{ elk_version }}
+    yum:
+      name: logstash-{{ elk_version }}
+      state: present
+      enablerepo: elastic
+      update_cache: yes

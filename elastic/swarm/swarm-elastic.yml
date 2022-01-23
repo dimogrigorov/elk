@@ -1,0 +1,93 @@
+version: '3.7'
+
+services:
+
+  coordinator:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.1
+    environment:
+      - "MAX_MAP_COUNT=262144"
+    deploy:
+      mode: 'global'
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
+    networks:
+      - stack_elastic
+    ports:
+      - "9400:9200"
+    volumes:
+      - coordinator:/usr/share/elasticsearch/data
+    configs:
+      - source: coordinator
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+      - source: coordinator-jvm
+        target: /usr/share/elasticsearch/config/jvm.options
+
+  master:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.1
+    environment:
+      - "MAX_MAP_COUNT=262144"
+    deploy:
+      mode: 'global'
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
+    networks:
+      - stack_elastic
+    volumes:
+      - master:/usr/share/elasticsearch/data
+    configs:
+      - source: master
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+      - source: master-jvm
+        target: /usr/share/elasticsearch/config/jvm.options
+
+  data:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.1
+    environment:
+      - "MAX_MAP_COUNT=262144"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
+      placement:
+          constraints: [node.hostname == elastic.sofia.ifao.net]
+    networks:
+      - stack_elastic
+    volumes:
+      - data:/usr/share/elasticsearch/data
+    configs:
+      - source: data
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+      - source: data-jvm
+        target: /usr/share/elasticsearch/config/jvm.options
+
+configs:
+  coordinator:
+    external: true
+  master:
+    external: true
+  data:
+    external: true
+  coordinator-jvm:
+    external: true
+  master-jvm:
+    external: true
+  data-jvm:
+    external: true
+
+volumes:
+  coordinator:
+  master:
+  data:
+
+networks:
+  stack_elastic:

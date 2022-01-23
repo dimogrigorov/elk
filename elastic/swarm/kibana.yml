@@ -1,0 +1,13 @@
+server.name: kibana
+server.host: "0"
+elasticsearch.url: http://elastic.sofia.ifao.net:9400
+elasticsearch.requestTimeout: 120000
+elasticsearch.shardTimeout: 120000
+kibana.defaultAppId: discover
+kibana.index: ".kibana"
+logging.dest: stdout
+logging.quiet: false
+logging.silent: false
+logging.verbose: true
+logging.timezone: EET
+elasticsearch.logQueries: true

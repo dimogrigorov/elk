@@ -1,0 +1,44 @@
+---
+  # Install Docker CE
+- name: Installs Docker CE
+  yum:
+    name: [ 'yum-utils',
+            'device-mapper-persistent-data',
+            'lvm2',
+            'docker-ce' ]
+    state: present
+
+  # Install tools for operating from terminal
+- name: Installs tools for operating from terminal
+  yum:
+    name: [ 'mc',
+            'tmux',
+            'tree',
+            'vim' ]
+    state: present
+
+  # Install Git
+- name: Installs Git
+  yum:
+    name: git
+    state: installed
+
+  # Install set of monitoring tools
+- name: Installs monitoring tools
+  yum:
+    name: [ 'htop',
+            'iotop',
+            'iftop',
+            'nload',
+            'dstat',
+            'glances' ]
+    state: installed
+
+  # Install set of network tools
+- name: Installs set of network tools
+  yum:
+    name: [ 'net-tools',
+            'nfs-utils',
+            'traceroute',
+            'telnet' ]
+    state: installed

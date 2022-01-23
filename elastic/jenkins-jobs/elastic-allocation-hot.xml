@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <displayName>Elastic Stack hot allocation</displayName>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>1</numToKeep>
+        <artifactDaysToKeep>1</artifactDaysToKeep>
+        <artifactNumToKeep>1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.TimerTrigger>
+      <spec>H/59 * * * *</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>curl -X GET &quot;http://elastic:9200/_cat/allocation?h=disk.used,disk.avail&quot; | sort -u | head -1 | sed &apos;s/\s\+/ /g&apos; | cut -d &apos; &apos; -f 2 &gt; disk_alloc
+curl -X GET &quot;http://elastic:9200/_cat/allocation?h=disk.used,disk.avail&quot; | sort -u | head -1 | sed &apos;s/\s\+/ /g&apos; | cut -d &apos; &apos; -f 3 &gt; disk_alloc_of
+
+
+SSD_ALLOC=$(head -n 1 disk_alloc)
+SSD_ALLOC_OF=$(head -n 1 disk_alloc_of)
+
+touch ${WORKSPACE}/PROPS
+printf &quot;SSD_ALLOC=&quot; &gt; ${WORKSPACE}/PROPS
+printf $SSD_ALLOC &gt;&gt; ${WORKSPACE}/PROPS
+
+printf &quot;\nSSD_ALLOC_OF=&quot; &gt;&gt; ${WORKSPACE}/PROPS
+printf $SSD_ALLOC_OF &gt;&gt; ${WORKSPACE}/PROPS
+
+cat ${WORKSPACE}/PROPS</command>
+    </hudson.tasks.Shell>
+    <EnvInjectBuilder plugin="envinject@2.1.6">
+      <info>
+        <propertiesFilePath>${WORKSPACE}/PROPS</propertiesFilePath>
+      </info>
+    </EnvInjectBuilder>
+    <hudson.tasks.Shell>
+      <command>rm -fr ${WORKSPACE}/PROPS
+rm -fr ${WORKSPACE}/disk_alloc
+rm -fr ${WORKSPACE}/disk_alloc_of</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <jenkins.plugins.hipchat.HipChatNotifier plugin="hipchat@2.1.1">
+      <credentialId>f52f2a8d-8ac4-4f2b-96da-89343eda713c</credentialId>
+      <room></room>
+      <notifications>
+        <jenkins.plugins.hipchat.model.NotificationConfig>
+          <notifyEnabled>true</notifyEnabled>
+          <textFormat>true</textFormat>
+          <notificationType>SUCCESS</notificationType>
+          <color>GREEN</color>
+          <messageTemplate>Elastic Stack hot allocation $SSD_ALLOC of $SSD_ALLOC_OF</messageTemplate>
+        </jenkins.plugins.hipchat.model.NotificationConfig>
+        <jenkins.plugins.hipchat.model.NotificationConfig>
+          <notifyEnabled>true</notifyEnabled>
+          <textFormat>true</textFormat>
+          <notificationType>FAILURE</notificationType>
+          <color>RED</color>
+          <messageTemplate>Elastic Stack is DOWN</messageTemplate>
+        </jenkins.plugins.hipchat.model.NotificationConfig>
+      </notifications>
+      <startJobMessage></startJobMessage>
+      <completeJobMessage></completeJobMessage>
+    </jenkins.plugins.hipchat.HipChatNotifier>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.34">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter></cleanupParameter>
+      <externalDelete></externalDelete>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+  </buildWrappers>
+</project>

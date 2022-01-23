@@ -1,0 +1,7 @@
+cluster.name: "docker-cluster"
+network.host: 0.0.0.0
+xpack.monitoring.elasticsearch.collection.enabled: true
+xpack.monitoring.exporters:
+  id1:
+    type: http
+    host: ["http://elastic-1.sofia.ifao.net:9200"]

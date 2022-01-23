@@ -1,0 +1,4 @@
+---
+  kibana_version: 6.3.1
+  kibana_config: kibana.config.yml
+  gpg_key: https://artifacts.elastic.co/GPG-KEY-elasticsearch

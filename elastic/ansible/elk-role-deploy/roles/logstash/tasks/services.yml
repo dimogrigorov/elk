@@ -1,0 +1,7 @@
+---
+  # Enables Logstash and starts it
+  - name: Starting and enabling Logstash service
+    service:
+      name: logstash
+      state: started
+      enabled: yes

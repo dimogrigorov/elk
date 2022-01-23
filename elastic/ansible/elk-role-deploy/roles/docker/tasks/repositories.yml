@@ -1,0 +1,35 @@
+---
+  # Add Docker repository
+  # This includes Docker Stable binaries, debug info and sources
+- name: Adds Docker CE Stable repository
+  yum_repository:
+    name: docker-ce
+    description: Docker Community repository
+    baseurl: https://download.docker.com/linux/centos/7/$basearch/stable
+    enabled: 1
+    gpgcheck: 1
+    gpgkey: https://download.docker.com/linux/centos/gpg
+
+- name: Adds Docker debug info repository
+  yum_repository:
+    name: docker-debug
+    description: Docker Community Debug repository
+    baseurl: https://download.docker.com/linux/centos/7/debug-$basearch/stable
+    enabled: 0
+    gpgcheck: 1
+    gpgkey: https://download.docker.com/linux/centos/gpg
+
+- name: Adds Docker source repository
+  yum_repository:
+    name: docker-source
+    description: Docker Community Source repository
+    baseurl: https://download.docker.com/linux/centos/7/source/stable
+    enabled: 0
+    gpgcheck: 1
+    gpgkey: https://download.docker.com/linux/centos/gpg
+
+  # Enable EPEL Release repository
+- name: Enables EPEL Release repository
+  yum:
+    name: epel-release
+    state: present

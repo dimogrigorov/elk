@@ -1,0 +1,28 @@
+node {
+
+  stage('Health check') {
+    def connection = new URL( "http://es.secure.ifao.net:9200/_cat/health?h=status").openConnection() as HttpURLConnection
+    def responseCode = connection.responseCode
+    def status = connection.inputStream.text
+
+    switch (status) {
+        case "green":
+            currentBuild.result = "SUCCSESS"
+            return
+            break
+        case "yellow":
+            currentBuild.result = "UNSTABLE"
+            return
+            break
+        case "red":
+            currentBuild.result = "FAILURE"
+            return
+            break
+        default:
+            return
+    }
+
+  }
+
+}
+
