@@ -1,0 +1,84 @@
+Certificate:
+    Data:
+        Version: 1 (0x0)
+        Serial Number: 4102 (0x1006)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=Root-CA
+        Validity
+            Not Before: Dec 21 10:12:09 2020 GMT
+            Not After : Dec 19 10:12:09 2030 GMT
+        Subject: C=BG, ST=SF, O=iFAO, CN=notify-master-service.default
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:a8:5d:9c:e0:6a:a8:ea:5b:cc:79:32:2f:d7:c3:
+                    fb:66:71:7c:5e:a2:27:6d:ed:30:6e:7d:4e:a8:c7:
+                    1f:fc:cc:66:c3:85:5a:b5:bf:ce:6d:61:7d:07:75:
+                    e0:f6:37:ed:ea:14:60:f5:c3:1c:c3:77:a2:dc:c4:
+                    b0:7f:f3:50:54:c8:9b:dc:6c:b5:8e:df:2e:1b:b0:
+                    a7:3a:a7:24:03:12:2e:cd:73:39:8c:96:8f:d6:a7:
+                    9a:98:84:4e:ac:4f:51:38:dc:00:88:7a:b7:e6:22:
+                    e7:2a:6c:94:16:c1:0e:df:f1:00:2f:1f:cf:9a:ea:
+                    f9:55:a7:5b:fb:80:c8:b0:5c:7e:92:bc:43:20:c0:
+                    f7:82:9c:d5:fa:35:d3:8f:e9:56:6d:ac:df:49:4f:
+                    f2:52:17:36:1b:6d:80:84:f3:2f:52:ee:e4:2d:81:
+                    0c:fd:47:55:01:27:8c:97:57:86:e1:26:47:95:e2:
+                    82:eb:e8:7b:27:d2:2d:ee:33:e3:77:5c:66:f7:06:
+                    e0:f0:52:e9:1f:83:4d:94:b2:d0:f2:6e:15:54:fd:
+                    37:37:e4:7e:77:db:1c:ad:9c:d9:46:78:6d:95:66:
+                    37:09:87:6d:b6:47:8e:a7:b6:3a:a8:07:fb:63:96:
+                    5e:4b:df:fb:cf:69:b5:f0:cd:c1:85:3c:80:ec:90:
+                    4f:95
+                Exponent: 65537 (0x10001)
+    Signature Algorithm: sha256WithRSAEncryption
+         bc:52:20:54:9c:53:9e:d9:01:4b:21:9a:71:a8:85:fe:d0:a8:
+         8d:b4:b9:39:35:96:4a:44:56:d4:66:4a:84:5a:ed:32:71:1c:
+         c2:23:92:9d:1d:dd:cc:43:71:48:70:0b:e1:3f:c9:b1:2b:75:
+         52:be:9e:ad:59:0d:dd:42:b3:37:87:12:4a:16:dd:2f:52:e9:
+         3f:2e:8f:84:dc:cb:b7:c1:73:2f:5f:d9:6c:59:06:b6:7a:88:
+         e6:98:d0:81:ed:ca:e9:c4:56:60:37:a3:a3:03:e6:d6:18:e8:
+         d8:8a:b7:94:d4:a8:15:21:24:ec:f5:11:d7:c4:cf:25:ba:7a:
+         e6:f0:bc:8e:16:c2:24:2a:be:38:be:0b:1e:e6:06:e6:e4:78:
+         7d:a1:48:00:80:75:16:b8:fb:24:f2:4a:2e:7e:3f:83:f1:99:
+         9c:22:a6:a7:c0:2a:9a:76:f4:37:5d:de:c5:98:ae:3f:06:f9:
+         d2:a3:99:f0:99:ee:40:11:fa:51:a8:7d:66:86:65:f5:f2:95:
+         41:af:ca:bc:37:b0:03:23:65:b2:33:44:70:ef:50:49:a3:94:
+         b5:30:2b:d4:91:94:be:ce:03:a6:e9:fe:d1:38:4e:b1:90:f9:
+         6e:0f:0e:d8:5a:36:ce:04:2b:73:63:f1:a5:c9:45:08:5e:32:
+         fc:72:08:ce
+-----BEGIN CERTIFICATE-----
+MIIC2DCCAcACAhAGMA0GCSqGSIb3DQEBCwUAMBIxEDAOBgNVBAMMB1Jvb3QtQ0Ew
+HhcNMjAxMjIxMTAxMjA5WhcNMzAxMjE5MTAxMjA5WjBRMQswCQYDVQQGEwJCRzEL
+MAkGA1UECAwCU0YxDTALBgNVBAoMBGlGQU8xJjAkBgNVBAMMHW5vdGlmeS1tYXN0
+ZXItc2VydmljZS5kZWZhdWx0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC
+AQEAqF2c4Gqo6lvMeTIv18P7ZnF8XqInbe0wbn1OqMcf/Mxmw4Vatb/ObWF9B3Xg
+9jft6hRg9cMcw3ei3MSwf/NQVMib3Gy1jt8uG7CnOqckAxIuzXM5jJaP1qeamIRO
+rE9RONwAiHq35iLnKmyUFsEO3/EALx/Pmur5Vadb+4DIsFx+krxDIMD3gpzV+jXT
+j+lWbazfSU/yUhc2G22AhPMvUu7kLYEM/UdVASeMl1eG4SZHleKC6+h7J9It7jPj
+d1xm9wbg8FLpH4NNlLLQ8m4VVP03N+R+d9scrZzZRnhtlWY3CYdttkeOp7Y6qAf7
+Y5ZeS9/7z2m18M3BhTyA7JBPlQIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQC8UiBU
+nFOe2QFLIZpxqIX+0KiNtLk5NZZKRFbUZkqEWu0ycRzCI5KdHd3MQ3FIcAvhP8mx
+K3VSvp6tWQ3dQrM3hxJKFt0vUuk/Lo+E3Mu3wXMvX9lsWQa2eojmmNCB7crpxFZg
+N6OjA+bWGOjYireU1KgVISTs9RHXxM8lunrm8LyOFsIkKr44vgse5gbm5Hh9oUgA
+gHUWuPsk8koufj+D8ZmcIqanwCqadvQ3Xd7FmK4/BvnSo5nwme5AEfpRqH1mhmX1
+8pVBr8q8N7ADI2WyM0Rw71BJo5S1MCvUkZS+zgOm6f7ROE6xkPluDw7YWjbOBCtz
+Y/GlyUUIXjL8cgjO
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIICtzCCAZ+gAwIBAgIJAMAYoSkyMMQJMA0GCSqGSIb3DQEBCwUAMBIxEDAOBgNV
+BAMMB1Jvb3QtQ0EwHhcNMjAwOTExMDkxNTU5WhcNMzAwOTA5MDkxNTU5WjASMRAw
+DgYDVQQDDAdSb290LUNBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA
+vRBPPIZ235LRp7IyKzVV++rqhWAvjwpEDGXouSVyDqYAT+WSper7WbypAe8Ybinc
+yF+nZF2/iiqZn1umIOs8Rb6Ml6sPE3dyPlxwiXB6Nw+OtySnkZIevbADgipMUWZv
+aIJPdwW2beAmlRjiVLJbV4o9N4nBCPKNo0QwWIv26roRGt4EfeQbtrzN+u/U9Pjr
+mDgcJlB4Vdi3vuj552DzRdmUPKIeMk2gghgPJJiFtzLm9d+HH/joVGy+G9CAjyxe
+zOCEdA8ZsZNw/AVkxjN7Ulpk3VEkpqju71JINACIGGS6E6cUMua/cJyZOXsu4gEK
+wU9vUSYG16FY80b2Nzs9dwIDAQABoxAwDjAMBgNVHRMEBTADAQH/MA0GCSqGSIb3
+DQEBCwUAA4IBAQA3Qn7vvOFhwnIhmoC5eup4Lb8EKBqw7kBPzKLoZzNcJ2PDX24w
+xdViiiNlnSuGZdc8AT7wnqRsDMDclXHz1387zt4lzxgGBUNT/bFGNoLqz4NHklEk
+lroCx1ZIXIzu7htUYrZkyL1jyCHUFnEiGEoWraSENPYM1A5qGO1jLSeGkJMUvQ7s
+zx0hsGuNkdqClZbIn6gQh8iY04JTTYpGY59KQnSd6iLckCRHYAKWtXUZqvOVv1d7
+KeQsBiNEoExkTcgLOOl7H+H+GcZAgOOUo32jze8zlZR+F+qPtCiX79iJfBcRFjhU
+QGJqmBpL2Azt7UuiQHVLo5xB2i04sP+u0orn
+-----END CERTIFICATE-----
